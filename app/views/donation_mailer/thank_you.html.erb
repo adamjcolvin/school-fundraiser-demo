@@ -1,0 +1,18 @@
+<p>Hello <%= @donation.donor_name %>,</p>
+
+<p>
+  Thank you for your gift of <strong><%= money(@donation.amount_cents) %></strong>
+  to <%= @campaign.title %>.
+</p>
+
+<p>
+  The campaign has raised <%= money(@campaign.raised_cents) %>
+  of its <%= money(@campaign.goal_cents) %> goal.
+</p>
+
+<% if @donation.note.to_plain_text.strip.present? %>
+  <p>We saved this note with your gift:</p>
+  <blockquote><%= @donation.note.to_plain_text.strip %></blockquote>
+<% end %>
+
+<p>No card was charged. This message is a record of your gift, sent by the Oak Street Elementary PTO.</p>

@@ -1,0 +1,35 @@
+<section
+  id="campaign_progress"
+  class="progress-card"
+  aria-live="polite"
+  data-controller="progress"
+  data-progress-percent-value="<%= campaign.percent_bar %>"
+>
+  <p class="eyebrow">Parent Teacher Organization</p>
+  <h1><%= campaign.title %></h1>
+  <p class="lede"><%= campaign.lede %></p>
+
+  <div class="progress">
+    <div class="progress__meta">
+      <span><strong><%= money(campaign.raised_cents) %></strong> raised</span>
+      <span><%= campaign.percent_funded %>% funded</span>
+    </div>
+    <div
+      class="progress__track"
+      role="progressbar"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuenow="<%= campaign.percent_bar %>"
+      aria-label="<%= campaign.percent_funded %> percent of the <%= money(campaign.goal_cents) %> goal"
+    >
+      <div class="progress__bar" data-progress-target="bar"></div>
+    </div>
+    <p class="progress__figures">
+      <span>Goal <strong><%= money(campaign.goal_cents) %></strong></span>
+      <span><%= campaign_timing(campaign) %></span>
+    </p>
+    <% if campaign.goal_reached? %>
+      <p class="progress__reached">The goal is met. Further gifts still go to the shelves.</p>
+    <% end %>
+  </div>
+</section>

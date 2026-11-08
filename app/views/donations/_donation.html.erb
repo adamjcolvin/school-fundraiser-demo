@@ -1,0 +1,8 @@
+<article class="donation" id="<%= dom_id(donation) %>">
+  <h3><%= donation.donor_name %></h3>
+  <p class="donation__amount"><%= money(donation.amount_cents) %></p>
+  <p class="donation__when"><%= time_ago_in_words(donation.created_at) %> ago</p>
+  <% if donation.note.to_plain_text.strip.present? %>
+    <div class="donation__note"><%= donation.note %></div>
+  <% end %>
+</article>

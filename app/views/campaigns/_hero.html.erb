@@ -1,0 +1,10 @@
+<section class="hero" aria-label="Campaign photograph">
+  <% if campaign.image.attached? %>
+    <%= image_tag campaign.image,
+          class: "hero__image",
+          alt: "Students gathered at tables in a classroom, listening to their teacher" %>
+  <% else %>
+    <div class="hero__fallback" role="img" aria-label="Classroom photograph unavailable"></div>
+  <% end %>
+  <p class="hero__caption">Lincoln, Nebraska</p>
+</section>

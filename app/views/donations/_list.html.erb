@@ -1,0 +1,18 @@
+<section class="donor-wall" aria-labelledby="donor-wall-heading" data-controller="donation-list">
+  <h2 id="donor-wall-heading">Gifts so far</h2>
+  <p class="donor-wall__empty" data-donation-list-target="empty" <%= "hidden" if page.records.any? %>>
+    Be the first classroom supporter. Gifts show up here as they are recorded.
+  </p>
+
+  <div id="donations" data-donation-list-target="list" aria-live="polite">
+    <%= render partial: "donations/donation", collection: page.records %>
+
+    <% if page.more? %>
+      <%= turbo_frame_tag "donations_page_#{page.next_number}",
+            src: campaign_donations_path(campaign, page: page.next_number),
+            loading: :lazy do %>
+        <p class="donations__loading">Loading more gifts</p>
+      <% end %>
+    <% end %>
+  </div>
+</section>

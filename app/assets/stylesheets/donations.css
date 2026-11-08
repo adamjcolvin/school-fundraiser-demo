@@ -1,0 +1,65 @@
+.donor-wall {
+  margin-top: 2.75rem;
+}
+
+.donor-wall h2 {
+  font-size: 1.7rem;
+  margin: 0 0 0.4rem;
+}
+
+.donor-wall__empty {
+  margin: 0.6rem 0 0;
+  color: var(--ink-soft);
+}
+
+.donor-wall__empty[hidden] {
+  display: none;
+}
+
+.donation {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 1rem;
+  padding: 0.95rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.donation h3 {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.donation__amount {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.donation__when {
+  grid-column: 1 / -1;
+  margin: 0.1rem 0 0;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
+
+.donation__note {
+  grid-column: 1 / -1;
+  margin-top: 0.35rem;
+}
+
+.donation__note .trix-content {
+  margin: 0;
+}
+
+.donation__note .trix-content u {
+  text-decoration-thickness: 1px;
+}
+
+.donations__loading {
+  color: var(--ink-soft);
+  min-height: 3rem;
+  margin: 0.75rem 0;
+}

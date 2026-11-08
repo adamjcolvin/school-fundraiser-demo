@@ -1,0 +1,129 @@
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  background: white;
+  color: var(--ink);
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  z-index: 5;
+}
+
+.skip-link:focus {
+  top: 0.75rem;
+}
+
+.site-header {
+  background: var(--green);
+  color: #f4f1ea;
+}
+
+.site-header a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.site-header__inner {
+  max-width: var(--content);
+  margin: 0 auto;
+  padding: 0.9rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.wordmark {
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
+.header-give {
+  border: 1px solid rgba(244, 241, 234, 0.55);
+  border-radius: 999px;
+  padding: 0.3rem 0.9rem;
+  font-size: 0.92rem;
+}
+
+.header-give:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.flash {
+  max-width: var(--content);
+  margin: 1rem auto 0;
+  background: var(--sage);
+  color: var(--green-deep);
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+}
+
+.flash--alert {
+  background: #f8ece8;
+  color: var(--clay-deep);
+}
+
+.page {
+  max-width: var(--content);
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 4rem;
+}
+
+.page h1 {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  margin: 0 0 0.75rem;
+}
+
+.page__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.8fr);
+  gap: 2.75rem;
+  align-items: start;
+}
+
+.page__give {
+  position: sticky;
+  top: 1.25rem;
+}
+
+.story p {
+  margin: 0 0 1rem;
+  max-width: 62ch;
+}
+
+.story p:last-child {
+  margin-bottom: 0;
+}
+
+.site-footer {
+  border-top: 1px solid var(--line);
+  padding: 1.75rem 1.25rem 2.75rem;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+
+.site-footer__inner {
+  max-width: var(--content);
+  margin: 0 auto;
+}
+
+.site-footer p {
+  margin: 0.2rem 0;
+}
+
+@media (max-width: 860px) {
+  .page__grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .page__give {
+    position: static;
+    order: -1;
+  }
+
+  .flash {
+    margin: 1rem 1rem 0;
+  }
+}

@@ -1,0 +1,37 @@
+.field trix-toolbar {
+  position: sticky;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  background: white;
+  overflow-x: auto;
+}
+
+.field trix-toolbar .trix-button-row {
+  flex-wrap: nowrap;
+}
+
+.field trix-editor {
+  min-height: 7rem;
+  border: 1px solid var(--line);
+  border-radius: 0 0 10px 10px;
+  background: white;
+  padding: 0.55rem 0.75rem;
+  font: inherit;
+}
+
+.field trix-toolbar .trix-button-group {
+  margin-bottom: 0;
+  border-color: var(--line);
+}
+
+/* A donor note only needs text styles. Headings, lists, and file
+   attachments are hidden so the toolbar stays small. */
+.field trix-toolbar .trix-button-group--block-tools,
+.field trix-toolbar .trix-button-group--file-tools {
+  display: none;
+}
+
+trix-toolbar .trix-button--icon-underline::before {
+  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20clip-rule%3D%22evenodd%22%20d%3D%22M6.5%204.5h2v6.8a3.5%203.5%200%200%200%207%200v-6.8h2v6.8a5.5%205.5%200%200%201-11%200v-6.8ZM5%2018.5h14v2H5v-2Z%22%20fill%3D%22%23000%22%2F%3E%3C%2Fsvg%3E");
+}

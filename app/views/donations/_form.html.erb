@@ -1,0 +1,69 @@
+<% presets = [ 25, 50, 100, 250 ] %>
+<% amount_value = donation.amount.presence || (donation.errors.any? ? nil : "50") %>
+<% chosen = amount_value.to_s.to_d %>
+
+<section class="give-card" aria-labelledby="give-heading">
+  <h2 id="give-heading">Give to the shelves</h2>
+  <p class="give-card__note">
+    Record a gift for the classroom libraries. No card is charged.
+    A thank you note is emailed to you.
+  </p>
+
+  <% if campaign.ended? %>
+    <p class="give-card__ended">The campaign date has passed. Gifts are still recorded.</p>
+  <% end %>
+
+  <% if donation.errors.any? %>
+    <div class="form-errors" role="alert">
+      <p>Please fix the following before we record this gift:</p>
+      <ul>
+        <% donation.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form_with model: [ campaign, donation ],
+        html: { data: { controller: "amount-picker donation-form", action: "submit->donation-form#start" } } do |form| %>
+    <div class="field">
+      <%= form.label :donor_name, "Your name" %>
+      <%= form.text_field :donor_name, required: true, maxlength: 80, autocomplete: "name" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :donor_email, "Email" %>
+      <%= form.email_field :donor_email, required: true, maxlength: 255, autocomplete: "email" %>
+    </div>
+
+    <div class="field">
+      <span class="field__label" id="amount-label">Amount (USD)</span>
+      <div class="amounts" role="group" aria-labelledby="amount-label">
+        <% presets.each do |preset| %>
+          <button
+            type="button"
+            class="<%= "is-selected" if amount_value.present? && chosen == preset %>"
+            aria-pressed="<%= amount_value.present? && chosen == preset %>"
+            data-amount-picker-target="button"
+            data-action="amount-picker#choose"
+            data-amount="<%= preset %>"
+          >$<%= preset %></button>
+        <% end %>
+      </div>
+      <%= form.label :amount, "Amount (USD)", class: "visually-hidden" %>
+      <%= form.text_field :amount,
+            value: amount_value,
+            required: true,
+            inputmode: "decimal",
+            autocomplete: "off",
+            data: { amount_picker_target: "amount", action: "input->amount-picker#sync" } %>
+    </div>
+
+    <div class="field">
+      <%= form.label :note, "Add a note (optional)" %>
+      <%= form.rich_text_area :note %>
+    </div>
+
+    <%= form.button "Record this gift", class: "submit", data: { donation_form_target: "submit" } %>
+  <% end %>
+</section>

@@ -1,0 +1,42 @@
+.hero {
+  position: relative;
+  background: var(--green-deep);
+}
+
+.hero__image,
+.hero__fallback {
+  width: 100%;
+  height: min(68vh, 640px);
+  object-fit: cover;
+  object-position: center 42%;
+}
+
+.hero__fallback {
+  background:
+    linear-gradient(160deg, rgba(31, 92, 77, 0.2), rgba(22, 63, 54, 0.55)),
+    var(--green);
+}
+
+.hero__caption {
+  position: absolute;
+  left: 1.25rem;
+  bottom: 5.75rem;
+  margin: 0;
+  color: #f4f1ea;
+  background: rgba(22, 40, 34, 0.55);
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 700px) {
+  .hero__image,
+  .hero__fallback {
+    height: 46vh;
+    min-height: 240px;
+  }
+
+  .hero__caption {
+    bottom: 3.4rem;
+  }
+}

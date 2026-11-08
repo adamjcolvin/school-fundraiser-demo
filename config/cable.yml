@@ -1,0 +1,12 @@
+development:
+  adapter: async
+
+test:
+  adapter: test
+
+# One process, in memory. Turbo Streams reach every browser connected to
+# this process. Do not turn on Puma workers, or each worker would have its
+# own empty set of connections. Solid Cable is not part of Rails 7.2, and
+# this app does not add Redis.
+production:
+  adapter: async
