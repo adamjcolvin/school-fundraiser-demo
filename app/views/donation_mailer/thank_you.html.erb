@@ -1,0 +1,12 @@
+<p><%= t(".greeting", name: @donation.donor_name) %></p>
+
+<p><%= t(".gift_html", amount: tag.strong(money(@donation.amount_cents)), campaign: @campaign.title) %></p>
+
+<p><%= t(".total", raised: money(@campaign.raised_cents), goal: money(@campaign.goal_cents)) %></p>
+
+<% if @donation.note.present? %>
+  <p><%= t(".note") %></p>
+  <blockquote><%= @donation.note.to_plain_text %></blockquote>
+<% end %>
+
+<p><%= t(".footer") %></p>

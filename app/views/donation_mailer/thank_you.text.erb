@@ -1,0 +1,12 @@
+<%= t(".greeting", name: @donation.donor_name) %>
+
+<%= t(".gift", amount: money(@donation.amount_cents), campaign: @campaign.title) %>
+
+<%= t(".total", raised: money(@campaign.raised_cents), goal: money(@campaign.goal_cents)) %>
+<% if @donation.note.present? %>
+
+<%= t(".note") %>
+<%= @donation.note.to_plain_text %>
+<% end %>
+
+<%= t(".footer") %>

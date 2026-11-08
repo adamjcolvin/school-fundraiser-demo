@@ -1,4 +1,24 @@
 en:
+  activerecord:
+    attributes:
+      donation:
+        donor_name: Your name
+        donor_email: Email
+        amount: Amount (USD)
+        amount_cents: Amount
+        note: Note
+    errors:
+      models:
+        donation:
+          attributes:
+            donor_email:
+              invalid: must be a real email address
+            amount_cents:
+              not_a_number: must be a dollar amount, like 25 or 25.00
+              in: must be between $1 and $100,000
+            note:
+              too_long: is too long (%{count} characters at most)
+
   layouts:
     application:
       title: Oak Street Elementary
@@ -16,3 +36,34 @@ en:
       license: Unsplash License
       demonstration: This page records gifts for a demonstration. It does not collect payment.
       view_code: View the code on GitHub
+
+  campaigns:
+    progress:
+      eyebrow: Parent Teacher Organization
+      raised_html: "%{amount} raised"
+      funded: "%{percent}% funded"
+      goal_html: "Goal %{amount}"
+      bar_label: "%{percent} percent of the %{goal} goal"
+      reached: The goal is met. Further gifts still go to the shelves.
+    timing:
+      ended:
+        one: Ended 1 day ago
+        other: "Ended %{count} days ago"
+      today: Ends today
+      remaining:
+        one: 1 day left
+        other: "%{count} days left"
+
+  donations:
+    donation:
+      ago: "%{time} ago"
+
+  donation_mailer:
+    thank_you:
+      subject: "Thank you for your gift to %{campaign}"
+      greeting: "Hello %{name},"
+      gift: "Thank you for your gift of %{amount} to %{campaign}."
+      gift_html: "Thank you for your gift of %{amount} to %{campaign}."
+      total: "The campaign has raised %{raised} of its %{goal} goal."
+      note: "We saved this note with your gift:"
+      footer: No card was charged. This message is a record of your gift, sent by the Oak Street Elementary PTO.

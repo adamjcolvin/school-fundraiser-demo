@@ -1,0 +1,10 @@
+oak_street:
+  title: Classroom libraries for Oak Street
+  location: Lincoln, Nebraska
+  image_alt: Students gathered at tables in a classroom, listening to their teacher
+  description: |
+    Fifteen classrooms. A low shelf in each one, filled with books the students pick themselves.
+
+    The youngest grades get to the school library once a week, if the schedule holds.
+  goal_cents: 20000
+  ends_on: 2027-05-15

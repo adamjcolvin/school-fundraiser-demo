@@ -1,0 +1,35 @@
+<section
+  id="campaign_progress"
+  class="progress-card"
+  aria-live="polite"
+  data-controller="progress"
+  data-progress-percent-value="<%= campaign.percent_complete %>"
+>
+  <p class="eyebrow"><%= t(".eyebrow") %></p>
+  <h1><%= campaign.title %></h1>
+  <p class="lede"><%= campaign.lede %></p>
+
+  <div class="progress">
+    <div class="progress__meta">
+      <span><%= t(".raised_html", amount: tag.strong(money(campaign.raised_cents))) %></span>
+      <span><%= t(".funded", percent: campaign.percent_funded) %></span>
+    </div>
+    <div
+      class="progress__track"
+      role="progressbar"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuenow="<%= campaign.percent_complete %>"
+      aria-label="<%= t(".bar_label", percent: campaign.percent_funded, goal: money(campaign.goal_cents)) %>"
+    >
+      <div class="progress__bar" data-progress-target="bar"></div>
+    </div>
+    <p class="progress__figures">
+      <span><%= t(".goal_html", amount: tag.strong(money(campaign.goal_cents))) %></span>
+      <span><%= campaign_timing(campaign) %></span>
+    </p>
+    <% if campaign.goal_reached? %>
+      <p class="progress__reached"><%= t(".reached") %></p>
+    <% end %>
+  </div>
+</section>
