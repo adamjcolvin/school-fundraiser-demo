@@ -1,0 +1,115 @@
+.give-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--green);
+  border-radius: 16px;
+  padding: 1.35rem 1.25rem 1.4rem;
+  box-shadow: 0 8px 24px rgba(28, 36, 48, 0.05);
+}
+
+.give-card h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.7rem;
+}
+
+.give-card__note,
+.give-card__ended {
+  color: var(--ink-soft);
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+}
+
+.give-card__ended {
+  color: var(--clay-deep);
+}
+
+.form-errors {
+  background: #f8ece8;
+  border: 1px solid #e3c2ba;
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.form-errors p {
+  margin: 0 0 0.35rem;
+  font-weight: 600;
+}
+
+.form-errors ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.95rem;
+}
+
+.field label,
+.field__label {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.field input[type="text"],
+.field input[type="email"] {
+  font: inherit;
+  padding: 0.7rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+  color: var(--ink);
+  width: 100%;
+}
+
+.amounts {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.45rem;
+}
+
+.amounts button {
+  font: inherit;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.45rem 0.2rem;
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.amounts button:hover {
+  border-color: var(--green);
+}
+
+.amounts button.is-selected {
+  background: var(--green);
+  border-color: var(--green);
+  color: #f4f1ea;
+}
+
+.give-card .submit {
+  width: 100%;
+  margin-top: 0.3rem;
+  font: inherit;
+  font-weight: 600;
+  background: var(--clay);
+  color: white;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+}
+
+.give-card .submit:hover {
+  background: var(--clay-deep);
+}
+
+@media (max-width: 380px) {
+  .amounts {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

@@ -1,0 +1,7 @@
+<% if donations.size == Donation::PAGE_SIZE %>
+  <%= turbo_frame_tag donations.last, :after,
+        src: campaign_donations_path(campaign, before: donations.last),
+        loading: :lazy do %>
+    <p class="donations__loading"><%= t(".loading") %></p>
+  <% end %>
+<% end %>

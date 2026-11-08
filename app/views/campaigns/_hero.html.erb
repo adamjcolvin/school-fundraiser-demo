@@ -1,0 +1,8 @@
+<section class="hero" aria-label="<%= t(".photograph") %>">
+  <% if campaign.image.attached? %>
+    <%= image_tag campaign.image, class: "hero__image", alt: campaign.image_alt %>
+  <% else %>
+    <div class="hero__fallback" role="img" aria-label="<%= t(".unavailable") %>"></div>
+  <% end %>
+  <p class="hero__caption"><%= campaign.location %></p>
+</section>

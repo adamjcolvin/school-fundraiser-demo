@@ -3,4 +3,10 @@ Rails.application.routes.draw do
 
   # The web app manifest gives the page an install icon and a theme color.
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
+
+  resources :campaigns, only: :show do
+    resources :donations, only: [ :index, :create ]
+  end
+
+  root "campaigns#show"
 end

@@ -1,0 +1,26 @@
+.field trix-toolbar {
+  position: sticky;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  background: white;
+  overflow-x: auto;
+}
+
+.field trix-toolbar .trix-button-row {
+  flex-wrap: nowrap;
+}
+
+.field trix-editor {
+  min-height: 7rem;
+  border: 1px solid var(--line);
+  border-radius: 0 0 10px 10px;
+  background: white;
+  padding: 0.55rem 0.75rem;
+  font: inherit;
+}
+
+.field trix-toolbar .trix-button-group {
+  margin-bottom: 0;
+  border-color: var(--line);
+}

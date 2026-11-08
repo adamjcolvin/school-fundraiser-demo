@@ -1,0 +1,6 @@
+<% content_for :title, t(".title") %>
+
+<main class="page">
+  <h1><%= t(".heading") %></h1>
+  <p><%= t(".hint_html", command: tag.code("bin/rails db:seed")) %></p>
+</main>

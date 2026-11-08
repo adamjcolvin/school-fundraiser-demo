@@ -1,0 +1,61 @@
+<section class="give-card" aria-labelledby="give-heading">
+  <h2 id="give-heading"><%= t(".heading") %></h2>
+  <p class="give-card__note"><%= t(".intro") %></p>
+
+  <% if campaign.ended? %>
+    <p class="give-card__ended"><%= t(".ended") %></p>
+  <% end %>
+
+  <% if donation.errors.any? %>
+    <div class="form-errors" role="alert">
+      <p><%= t(".errors_intro") %></p>
+      <ul>
+        <% donation.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form_with model: [ campaign, donation ], data: { controller: "amount-picker" } do |form| %>
+    <div class="field">
+      <%= form.label :donor_name %>
+      <%= form.text_field :donor_name, required: true, maxlength: 80, autocomplete: "name" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :donor_email %>
+      <%= form.email_field :donor_email, required: true, maxlength: 255, autocomplete: "email" %>
+    </div>
+
+    <div class="field">
+      <span class="field__label" id="amount-label"><%= Donation.human_attribute_name(:amount) %></span>
+      <div class="amounts" role="group" aria-labelledby="amount-label">
+        <% Donation::SUGGESTED_AMOUNTS.each do |dollars| %>
+          <button
+            type="button"
+            class="<%= "is-selected" if amount_selected?(donation, dollars) %>"
+            aria-pressed="<%= amount_selected?(donation, dollars) %>"
+            data-amount-picker-target="button"
+            data-action="amount-picker#choose"
+            data-amount="<%= dollars %>"
+          ><%= number_to_currency(dollars, precision: 0) %></button>
+        <% end %>
+      </div>
+      <%= form.label :amount, class: "visually-hidden" %>
+      <%= form.text_field :amount,
+            required: true,
+            inputmode: "decimal",
+            autocomplete: "off",
+            data: { amount_picker_target: "amount", action: "input->amount-picker#sync" } %>
+    </div>
+
+    <div class="field" data-controller="note">
+      <%= form.label :note, t(".note_label") %>
+      <%= render "donations/note_toolbar" %>
+      <%= form.rich_text_area :note, toolbar: "note_toolbar", data: { action: "trix-file-accept->note#refuseFile" } %>
+    </div>
+
+    <%= form.button class: "submit", data: { turbo_submits_with: t(".recording") } %>
+  <% end %>
+</section>

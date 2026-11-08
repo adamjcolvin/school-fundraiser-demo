@@ -1,0 +1,9 @@
+<section class="donor-wall" aria-labelledby="donor-wall-heading">
+  <h2 id="donor-wall-heading"><%= t(".heading") %></h2>
+  <p class="donor-wall__empty"><%= t(".empty") %></p>
+
+  <div id="donations" aria-live="polite">
+    <%= render donations %>
+    <%= render "donations/more", campaign: campaign, donations: donations %>
+  </div>
+</section>

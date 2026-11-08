@@ -1,0 +1,4 @@
+<%= turbo_frame_tag @cursor, :after do %>
+  <%= render @donations %>
+  <%= render "donations/more", campaign: @campaign, donations: @donations %>
+<% end %>

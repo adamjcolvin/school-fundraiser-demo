@@ -19,6 +19,11 @@ en:
             note:
               too_long: is too long (%{count} characters at most)
 
+  helpers:
+    submit:
+      donation:
+        create: Record this gift
+
   layouts:
     application:
       title: Oak Street Elementary
@@ -38,6 +43,9 @@ en:
       view_code: View the code on GitHub
 
   campaigns:
+    hero:
+      photograph: Campaign photograph
+      unavailable: Classroom photograph unavailable
     progress:
       eyebrow: Parent Teacher Organization
       raised_html: "%{amount} raised"
@@ -45,6 +53,10 @@ en:
       goal_html: "Goal %{amount}"
       bar_label: "%{percent} percent of the %{goal} goal"
       reached: The goal is met. Further gifts still go to the shelves.
+    missing:
+      title: No campaign yet
+      heading: No campaign is loaded yet.
+      hint_html: Run %{command} to create the Oak Street fundraiser.
     timing:
       ended:
         one: Ended 1 day ago
@@ -55,8 +67,25 @@ en:
         other: "%{count} days left"
 
   donations:
+    create:
+      thank_you: "Thank you, %{name}. Your gift of %{amount} is recorded."
+    list:
+      heading: Gifts so far
+      empty: Be the first classroom supporter. Gifts show up here as they are recorded.
     donation:
       ago: "%{time} ago"
+    more:
+      loading: Loading more gifts
+    form:
+      heading: Give to the shelves
+      intro: Record a gift for the classroom libraries. No card is charged. A thank you note is emailed to you.
+      ended: The campaign date has passed. Gifts are still recorded.
+      errors_intro: "Please fix the following before we record this gift:"
+      note_label: Add a note (optional)
+      recording: Recording gift
+    note_toolbar:
+      bold: Bold
+      italic: Italic
 
   donation_mailer:
     thank_you:
