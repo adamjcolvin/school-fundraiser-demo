@@ -1,0 +1,15 @@
+# Solid Cable polls the primary database. One database is enough, and a
+# message written by any process reaches every browser connected to any
+# process.
+development:
+  adapter: solid_cable
+  polling_interval: 0.1.seconds
+  message_retention: 1.day
+
+test:
+  adapter: test
+
+production:
+  adapter: solid_cable
+  polling_interval: 0.1.seconds
+  message_retention: 1.day

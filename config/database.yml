@@ -1,0 +1,28 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  # Puma, the Solid Queue supervisor (async mode shares this pool), and
+  # Solid Cable's poller all check out connections. The extra room covers
+  # the default worker threads, the dispatcher, and the scheduler.
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 }.to_i + 8 %>
+
+development:
+  <<: *default
+  database: school_fundraiser_development
+
+# CI sets PGHOST, PGUSER, and PGPASSWORD. Locally those are unset and
+# Postgres uses a domain socket with the current operating system user.
+test:
+  <<: *default
+  database: school_fundraiser_test
+<% if ENV["PGHOST"] && !ENV["PGHOST"].empty? %>
+  host: <%= ENV["PGHOST"] %>
+  username: <%= ENV["PGUSER"] %>
+  password: <%= ENV["PGPASSWORD"] %>
+<% end %>
+
+# Render sets DATABASE_URL. Do not also set database, username, or password
+# here. Those keys would override the URL.
+production:
+  <<: *default
+  url: <%= ENV["DATABASE_URL"] %>

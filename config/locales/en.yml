@@ -1,0 +1,18 @@
+en:
+  layouts:
+    application:
+      title: Oak Street Elementary
+      description: The Oak Street Elementary PTO is raising money for a shelf of books in every classroom.
+      skip_to_form: Skip to the gift form
+
+  shared:
+    header:
+      school: Oak Street Elementary
+      view_code: View the code
+      give: Give
+    footer:
+      organization: Oak Street Elementary PTO, Lincoln, Nebraska.
+      photograph_html: Classroom photograph from Unsplash, used under the %{license}.
+      license: Unsplash License
+      demonstration: This page records gifts for a demonstration. It does not collect payment.
+      view_code: View the code on GitHub
