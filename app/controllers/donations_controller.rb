@@ -7,7 +7,7 @@ class DonationsController < ApplicationController
       return
     end
 
-    @page = @campaign.donation_page(params[:page])
+    @page = @campaign.donation_page(params[:before])
     render layout: false
   end
 
@@ -15,6 +15,7 @@ class DonationsController < ApplicationController
     @donation = @campaign.donations.build(donation_params)
 
     if @donation.save
+      @donation.publish
       redirect_to campaign_path(@campaign), notice: thank_you_notice
     else
       @page = @campaign.donation_page(1)
@@ -32,6 +33,6 @@ class DonationsController < ApplicationController
     end
 
     def thank_you_notice
-      "Thank you, #{@donation.donor_name}. Your gift of #{helpers.number_to_currency(@donation.amount_cents / 100.0)} is recorded."
+      "Thank you, #{@donation.donor_name}. Your gift of #{helpers.money(@donation.amount_cents)} is recorded."
     end
 end

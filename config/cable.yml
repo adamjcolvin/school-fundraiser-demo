@@ -1,12 +1,15 @@
+# Solid Cable polls the primary database. One database is enough, and a
+# message written by any process reaches every browser connected to any
+# process.
 development:
-  adapter: async
+  adapter: solid_cable
+  polling_interval: 0.1.seconds
+  message_retention: 1.day
 
 test:
   adapter: test
 
-# One process, in memory. Turbo Streams reach every browser connected to
-# this process. Do not turn on Puma workers, or each worker would have its
-# own empty set of connections. Solid Cable is not part of Rails 7.2, and
-# this app does not add Redis.
 production:
-  adapter: async
+  adapter: solid_cable
+  polling_interval: 0.1.seconds
+  message_retention: 1.day

@@ -4,28 +4,21 @@ class Donation < ApplicationRecord
   MAX_CENTS = 10_000_000
   NOTE_LIMIT = 500
   AMOUNT_PATTERN = /\A\d+(\.\d{1,2})?\z/
+  PRESETS = [ 25, 50, 100, 250 ].freeze
+  DEFAULT_AMOUNT = "50"
 
   belongs_to :campaign
   has_rich_text :note
 
-  # Set by seeds so sample gifts do not email anyone or broadcast.
-  attribute :skip_notifications, :boolean, default: false
-
   scope :recent, -> { with_rich_text_note.order(created_at: :desc, id: :desc) }
 
-  before_validation :normalize_donor_fields
+  normalizes :donor_name, with: ->(name) { name.strip }
+  normalizes :donor_email, with: ->(email) { email.strip.downcase }
 
   validates :donor_name, presence: true, length: { maximum: 80 }
-  validates :donor_email, presence: true,
-    format: { with: URI::MailTo::EMAIL_REGEXP, message: "must be a real email address" }
-  validate :amount_is_acceptable
+  validates :donor_email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :amount_cents, numericality: { only_integer: true, in: MIN_CENTS..MAX_CENTS }
   validate :note_is_short_enough
-
-  after_create_commit :publish_donation, unless: :skip_notifications
-
-  def self.human_attribute_name(attribute, options = {})
-    { donor_name: "Name", donor_email: "Email", amount: "Amount", note: "Note" }[attribute.to_sym] || super
-  end
 
   def self.cents_from(value)
     raw = value.to_s.strip.delete("$,")
@@ -48,16 +41,63 @@ class Donation < ApplicationRecord
     self.amount_cents = self.class.cents_from(value)
   end
 
-  # One page of the public gift list. The first page is rendered with the
-  # campaign. Later pages arrive through a lazy Turbo Frame.
+  # The value shown in the gift form. A fresh form suggests DEFAULT_AMOUNT.
+  # A rejected submission keeps what the donor typed.
+  def form_amount
+    amount.presence || (errors.any? ? nil : DEFAULT_AMOUNT)
+  end
+
+  def preset_selected?(preset)
+    value = form_amount
+    value.present? && value.to_d == preset.to_d
+  end
+
+  def note_text
+    note.to_plain_text.strip
+  end
+
+  def note?
+    note_text.present?
+  end
+
+  def publish
+    broadcast_prepend_to(
+      campaign,
+      :donations,
+      target: "donations",
+      partial: "donations/donation",
+      locals: { donation: self }
+    )
+
+    broadcast_replace_to(
+      campaign,
+      :donations,
+      target: "campaign_progress",
+      partial: "campaigns/progress",
+      locals: { campaign: campaign }
+    )
+
+    DonationMailer.thank_you(self).deliver_later
+  end
+
+  # One page of the public gift list, newest first. The cursor is the id of
+  # the last gift already shown. The next page is every gift strictly older
+  # than that row, so a gift that arrives at the top does not shift the rest.
   class Page
-    attr_reader :records, :number
+    attr_reader :records, :before
 
-    def initialize(campaign, page)
-      @number = page.to_i
-      @number = 1 if @number < 1
+    def initialize(campaign, before = nil)
+      @before = before.presence
+      scope = campaign.donations.recent
 
-      batch = campaign.donations.recent.offset((@number - 1) * PAGE_SIZE).limit(PAGE_SIZE + 1).to_a
+      if (cursor = cursor_for(campaign))
+        scope = scope.where(
+          "(donations.created_at, donations.id) < (?, ?)",
+          cursor.created_at, cursor.id
+        )
+      end
+
+      batch = scope.limit(PAGE_SIZE + 1).to_a
       @more = batch.size > PAGE_SIZE
       @records = batch.first(PAGE_SIZE)
     end
@@ -66,50 +106,30 @@ class Donation < ApplicationRecord
       @more
     end
 
-    def next_number
-      @number + 1
+    def frame_id
+      "donations_after_#{before}"
     end
+
+    def next_frame_id
+      "donations_after_#{next_before}"
+    end
+
+    def next_before
+      records.last.id
+    end
+
+    private
+      def cursor_for(campaign)
+        return if before.blank?
+
+        campaign.donations.find_by(id: before)
+      end
   end
 
   private
-    def normalize_donor_fields
-      self.donor_name = donor_name.to_s.strip
-      self.donor_email = donor_email.to_s.strip.downcase
-    end
-
-    def amount_is_acceptable
-      if amount_cents.nil?
-        errors.add(:amount, "must be a dollar amount, like 25 or 25.00")
-      elsif amount_cents < MIN_CENTS
-        errors.add(:amount, "must be at least $1")
-      elsif amount_cents > MAX_CENTS
-        errors.add(:amount, "must be $100,000 or less")
-      end
-    end
-
     def note_is_short_enough
       return if note.to_plain_text.length <= NOTE_LIMIT
 
-      errors.add(:note, "is too long (#{NOTE_LIMIT} characters at most)")
-    end
-
-    def publish_donation
-      broadcast_prepend_to(
-        campaign,
-        :donations,
-        target: "donations",
-        partial: "donations/donation",
-        locals: { donation: self }
-      )
-
-      broadcast_replace_to(
-        campaign,
-        :donations,
-        target: "campaign_progress",
-        partial: "campaigns/progress",
-        locals: { campaign: campaign }
-      )
-
-      DonationMailer.thank_you(self).deliver_later
+      errors.add(:note, :too_long, count: NOTE_LIMIT)
     end
 end

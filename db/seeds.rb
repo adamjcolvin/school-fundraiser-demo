@@ -53,7 +53,6 @@ def seed_gifts(campaign)
       donor_name: gift[:name],
       donor_email: gift[:email],
       amount: gift[:amount],
-      skip_notifications: true,
       created_at: (index + 1).days.ago.change(hour: 10)
     )
     donation.note = gift[:note] if gift[:note]
@@ -65,6 +64,8 @@ campaign = Campaign.order(:id).first_or_initialize
 campaign.assign_attributes(
   title: "Classroom libraries for Oak Street",
   description: DESCRIPTION.strip,
+  location: "Lincoln, Nebraska",
+  image_alt: "Students gathered at tables in a classroom, listening to their teacher",
   goal_cents: 1_200_000,
   ends_on: Date.new(2027, 5, 15)
 )

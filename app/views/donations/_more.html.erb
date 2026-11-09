@@ -1,0 +1,7 @@
+<% if page.more? %>
+  <%= turbo_frame_tag page.next_frame_id,
+        src: campaign_donations_path(campaign, before: page.next_before),
+        loading: :lazy do %>
+    <p class="donations__loading">Loading more gifts</p>
+  <% end %>
+<% end %>

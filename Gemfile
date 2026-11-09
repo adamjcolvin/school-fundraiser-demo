@@ -14,9 +14,9 @@ gem "importmap-rails"
 gem "turbo-rails"
 # Hotwire's modest JavaScript framework [https://stimulus.hotwired.dev]
 gem "stimulus-rails"
-# Action Cable in production uses the async adapter (see config/cable.yml).
-# A free Render instance is one process, so Redis is not required.
-# gem "redis", ">= 4.0.1"
+# Jobs and live updates are stored in Postgres.
+gem "solid_queue", "~> 1.7"
+gem "solid_cable", "~> 3.0"
 
 # Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
 # gem "kredis"

@@ -1,4 +1,5 @@
 require "active_support/core_ext/integer/time"
+require_relative "../../lib/mail_delivery/smtp"
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -68,19 +69,25 @@ Rails.application.configure do
   # Use a different cache store in production.
   # config.cache_store = :mem_cache_store
 
-  # In-process jobs. deliver_later runs on a thread in this process.
-  # A restart can drop a job that has not started. That is acceptable for
-  # a thank you note on a free instance, and it needs no extra gem.
-  config.active_job.queue_adapter = :async
+  # Solid Queue on the primary database. The Puma plugin processes jobs
+  # in this service, so a thank you survives a request finishing.
+  config.active_job.queue_adapter = :solid_queue
+  config.active_job.enqueue_after_transaction_commit = :default
 
   # Disable caching for Action Mailer templates even if Action Controller
   # caching is enabled.
   config.action_mailer.perform_caching = false
 
-  # Log the thank you email. No SMTP credentials, and Render's free tier
-  # blocks the usual SMTP ports.
-  config.action_mailer.delivery_method = :log
-  config.action_mailer.raise_delivery_errors = false
+  # SMTP_ADDRESS turns on delivery through the configured server.
+  # Without it, the message is written to the log.
+  if (smtp = MailDelivery::Smtp.settings)
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.raise_delivery_errors = true
+    config.action_mailer.smtp_settings = smtp
+  else
+    config.action_mailer.delivery_method = :log
+    config.action_mailer.raise_delivery_errors = false
+  end
   config.action_mailer.default_url_options = {
     host: ENV.fetch("APP_HOST", "example.com"),
     protocol: "https"

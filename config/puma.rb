@@ -29,11 +29,15 @@ port ENV.fetch("PORT", 3000)
 # Allow puma to be restarted by `bin/rails restart` command.
 plugin :tmp_restart
 
-# Do not call `workers` here. Turbo Streams use the async Action Cable
-# adapter, which only reaches browsers connected to this process. A worker
-# cluster would split those connections and live totals would go missing.
-# Render's free web service is a single instance. Leave WEB_CONCURRENCY
-# unset or at 0. This file intentionally ignores that variable.
+# Do not call `workers`. Render's free web service is one instance, and
+# WEB_CONCURRENCY is 0. Solid Queue's supervisor runs as threads inside
+# this process (async mode) so a forked worker, dispatcher, and scheduler
+# are not also sitting in memory. System tests boot Puma with RAILS_ENV=test
+# and use the test adapter, so the plugin stays off there.
+unless ENV["RAILS_ENV"] == "test"
+  plugin :solid_queue
+  solid_queue_mode :async
+end
 
 # Specify the PID file. Defaults to tmp/pids/server.pid in development.
 # In other environments, only set the PID file if requested.

@@ -1,108 +1,98 @@
 # Classroom libraries for Oak Street
 
-A single campaign page for a school fundraiser. Visitors see the classroom, the goal, and the running total, record a gift, and watch the total update live for everyone who has the page open.
+This is a small school fundraiser I built as a portfolio piece. It is one campaign page. A visitor sees the classroom, the goal, and the running total, records a gift, and watches that total move for everyone who has the page open.
 
-Oak Street Elementary is fictional. The page records gifts. It does not collect payment.
+Oak Street Elementary is fictional. The page records gifts. It does not take payment.
+
+I kept the stack close to the one I use at work: Rails 7.2, Ruby 3.2, Postgres, and Hotwire.
 
 ## What the page does
 
-- One campaign, with a hero photograph, a goal in dollars, and a progress bar.
-- A gift form: name, email, preset or custom amount, and an optional note.
-- The note is rich text. Bold, italic, and underline all work.
-- New gifts and the new total appear on every open browser without a refresh.
-- The gift list loads ten at a time. Scrolling fetches the next ten.
-- Each gift queues a thank you email with `deliver_later`.
+There is a single campaign. The homepage shows it, and `/campaigns/:id` shows it by id. The photograph, the place line under it, and the alt text live on the campaign. The layout stays the same if the campaign copy changes.
 
-Money is stored as integer cents. `$25.50` is `2550`.
+The gift form asks for a name, an email, an amount, and an optional note. The amount starts at $50, with presets for $25, $50, $100, and $250. Those numbers, the default, and which preset is selected sit on `Donation`, so the template only prints them. Stimulus keeps the highlight in step if you type a custom amount.
 
-## Where the Rails features live
+The note is Action Text. Trix does not ship underline, so `app/javascript/trix_underline.js` registers it once, on `trix-before-initialize`, and the Action Text sanitizer allows the `<u>` tag.
 
-| Feature | Where to look |
-| --- | --- |
-| Turbo Streams | `Donation#publish_donation` broadcasts the new gift and replaces `#campaign_progress`. The page subscribes with `turbo_stream_from` in `campaigns/show`. |
-| Turbo Frames | `Donation::Page` pages ten gifts. The first page is in the show view. The next page is a lazy frame rendered by `DonationsController#index`. |
-| Stimulus | `amount_picker_controller` (preset amounts), `progress_controller` (bar animation), `donation_form_controller` (submit label), `donation_list_controller` (hides the empty state). |
-| Active Storage | `Campaign` `has_one_attached :image`. The file is seeded from `db/seeds/images/classroom.jpg`. |
-| Action Mailer | `DonationMailer#thank_you`, called with `deliver_later` from the donation callback. |
-| Action Text | `Donation` `has_rich_text :note`. Underline is not in Trix by default. `app/javascript/trix_underline.js` registers the attribute and adds the toolbar button. `config/initializers/action_text.rb` allows the `<u>` tag through the sanitizer. |
+New gifts are prepended to the list and the progress card is replaced, over a Turbo Stream subscription on the campaign. The list itself loads ten gifts at a time. The next ten are a lazy Turbo Frame whose cursor is the id of the last gift already on the page. The query asks for rows older than that gift's timestamp and id. An offset would slide underneath you as new gifts arrive at the top. A cursor does not.
 
-Controllers stay thin. Totals, percents, cents conversion, and paging live on `Campaign` and `Donation`.
+Recording a gift sends a thank you with `deliver_later`. Seeds and any other plain `create!` do not. The controller is what publishes the gift, so there is no flag to remember to set.
 
-## Design
+## Money
 
-The page is a simple nonprofit landing page: a full width classroom photograph, a card with the goal, then the story beside the gift form.
+Amounts are integer cents. `$25.50` is `2550`. The form parses dollars with `BigDecimal` and half-up rounding, and it rejects anything that is not a whole number of cents. `ApplicationHelper#money` is the only formatter. The progress card, the gift list, the flash, and the email all use it.
 
-The palette comes from that photograph. Deep green from the room, warm paper from the desks, clay from the maroon hoodie. Type is a serif for titles and a system sans for everything else. Styles are plain CSS, split by component under `app/assets/stylesheets/`. There is no CSS framework.
+The accepted range is $1 to $100,000. That is `numericality: { in: 100..10_000_000 }` on `amount_cents`, with the wording in `config/locales/en.yml`. A bad amount is told the whole range.
 
-## Run it locally
+`raised_cents` is a `SUM` memoized on the campaign object. The progress card reads it several times in one render. A counter column would have to add and subtract cents by hand, and it can drift. The sum is the truth, and the object only lives for the request.
 
-Ruby 3.2.3 and Postgres 14 or newer. The app user needs permission to create databases.
+## Jobs and live updates
+
+Active Job is Solid Queue. Action Cable is Solid Cable. Both use the primary Postgres database. Redis would be a second service to run, and a separate queue database would be a second schema against the one Render Postgres instance. The queue tables and `solid_cable_messages` are ordinary migrations, so `bin/render-build.sh` picks them up with `db:migrate`.
+
+Puma loads the Solid Queue plugin in every environment except test, and runs it in async mode. The supervisor, the dispatcher, the worker, and the recurring cleanup are threads in the web process. Fork mode is the gem's default, and it is the better isolated setup, but it also starts a separate process for each of those roles. This deploy is one small Render web service. Threads keep the memory in one process, which is the difference between the service staying up and it being killed. `WEB_CONCURRENCY` stays at 0 for the same reason. `bin/jobs` is there if you want the supervisor on its own.
+
+Because the jobs sit in Postgres, a restart finishes a thank you that had not started yet. The old in-process async adapter could not say that. The database pool is `RAILS_MAX_THREADS` plus eight, so the web threads and the queue threads are not sharing too few connections.
+
+In production and development the queue adapter waits until an open transaction commits before it enqueues. The test suite leaves the default alone, so `assert_enqueued_emails` still sees the job inside the test transaction. The controller enqueues after `save` has returned, so a gift that fails validation never sends mail.
+
+Solid Cable polls the same database. A message written on this process reaches a browser connected to any process. That matters if the service is ever more than one instance. The async Cable adapter only talks to browsers on the same process, which is a trap the moment you add a second one.
+
+## Mail
+
+`SMTP_ADDRESS` turns delivery on. The settings are `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_AUTHENTICATION`, and `SMTP_ENABLE_STARTTLS_AUTO`. Port 587, plain auth, and STARTTLS are the defaults when those three are absent. A failed delivery raises.
+
+When `SMTP_ADDRESS` is blank, the message is written to the log by `MailDelivery::Log`. Development always logs. Test uses the `:test` delivery method. The log delivery method is registered in `config/initializers/mail_delivery.rb`.
+
+## Accessibility
+
+The page has a skip link to the form. The amount presets are a button group with `aria-pressed`. The progress bar exposes `aria-valuenow`. The gift list is a live region, and form errors sit in an alert. The amount field has a real label, hidden visually because the group already labels it.
+
+## Running it
+
+Ruby 3.2.3 and Postgres 14 or newer. The database user needs permission to create databases.
 
 ```bash
 bin/setup
 bin/rails server
 ```
 
-`bin/setup` installs gems, prepares the database, and seeds the campaign. Open [http://localhost:3000](http://localhost:3000).
+`bin/setup` installs gems, prepares the database, and seeds the campaign. Open http://localhost:3000. `bin/rails server` also starts the job supervisor, so a thank you recorded locally shows up in the log within a second or two.
 
-Seed data is safe to run again. It updates the campaign in place, attaches the hero only when the file is missing from disk, and inserts the sample gifts only when the campaign has none. Sample gifts do not send email.
-
-## Tests
+The seed is safe to run again. It updates the campaign in place, attaches the hero only when the file is missing from disk, and inserts the sample gifts only when the campaign has none.
 
 ```bash
 bin/rails test
 bin/rails test:system
+bin/rubocop
 ```
 
 System tests use headless Chrome. They cover recording a gift, underline in the note, validation, and the second page of gifts.
 
-## Email
+## Deploying on Render
 
-There is no SMTP setup. Development and production both use a small delivery method, `MailDelivery::Log`, which writes the message to the Rails log. After you record a gift, the thank you is in the server log, including the recipient and the text body.
+`render.yaml` defines a web service and a Postgres database, both in Oregon. Create the service from that Blueprint. Render then uses the Ruby runtime. The Dockerfile from `rails new` is for Kamal, and it is the wrong build for this service.
 
-The test environment still uses the `:test` delivery method so the suite can assert on the queued message.
+Before the first deploy, set `RAILS_MASTER_KEY` in the Render dashboard. The Blueprint marks it `sync: false`, so Render asks for the value. Locally it is the contents of `config/master.key`. That file is gitignored. Rails reads `ENV["RAILS_MASTER_KEY"]` in production and uses it to decrypt `config/credentials.yml.enc`.
 
-`deliver_later` uses the async Active Job adapter. The job runs on a thread in the web process. A restart can drop a job that has not started. That is the tradeoff for not adding a queue gem.
+The Blueprint sets `RAILS_ENV`, `DATABASE_URL` from the database, `RAILS_LOG_LEVEL`, and `WEB_CONCURRENCY=0`. Set the SMTP variables on the service as well. `APP_HOST` is optional. The mailer falls back to `example.com` for links.
 
-## Deploy on Render
+`bin/render-build.sh` runs `bundle install`, `assets:precompile`, `db:migrate`, and `db:seed`. Migrate and seed are safe to repeat. Puma listens on `0.0.0.0` and `$PORT`. The health check is `/up`.
 
-`render.yaml` defines a free web service and a free Postgres database, both in Oregon. Create the service from that Blueprint so Render uses the Ruby runtime rather than the Dockerfile that `rails new` also generates.
-
-Before the first deploy, set `RAILS_MASTER_KEY` in the Render Dashboard. The Blueprint marks it `sync: false`, so Render asks for the value. Locally it is the contents of `config/master.key`. That file is gitignored. Do not commit it. Rails reads `ENV["RAILS_MASTER_KEY"]` in production and uses it to decrypt `config/credentials.yml.enc`.
-
-The Blueprint sets the rest:
-
-- `RAILS_ENV=production`
-- `DATABASE_URL` from the Postgres instance (`connectionString`)
-- `RAILS_LOG_LEVEL=info`
-- `WEB_CONCURRENCY=0`
-
-`bin/render-build.sh` runs `bundle install`, `assets:precompile`, `db:migrate`, and `db:seed`. Migrate and seed are safe to repeat. The health check path is `/up`.
-
-Puma listens on `0.0.0.0` and `$PORT`. It does not fork workers. Turbo Streams use the async Action Cable adapter, which can only reach browsers connected to this process. One free instance and one process is the whole setup. Solid Cable does not ship with Rails 7.2, and Redis is not installed.
-
-### Free tier limits
-
-Checked against Render's current docs:
-
-- The free web service sleeps after about 15 minutes of no traffic. The first request after that is slow.
-- A workspace gets 750 free instance hours per month.
-- The free Postgres database expires 30 days after creation. There is a grace period, then Render deletes it. A workspace can have one free Postgres database.
-- The service disk is ephemeral. Uploads made through the app disappear on redeploy. The hero photograph is committed in the repo and reattached by `db/seeds` during the build, so it survives a new deploy.
-- Free web services cannot receive private network traffic. They can reach the database. Outbound SMTP ports are blocked, which is another reason mail is logged.
-
-If the first build fails because the database is not ready yet, redeploy once the Postgres instance is available.
+The free web service sleeps after about fifteen minutes of no traffic, and the first request after that is slow. A workspace gets 750 free instance hours a month. The free Postgres database expires 30 days after creation. The service disk is ephemeral, so uploads made through the app disappear on redeploy. The hero photograph is in the repo and the seed reattaches it during the build.
 
 ## Photograph
 
 The hero is a classroom scene from Unsplash, saved at `db/seeds/images/classroom.jpg`.
 
-Source: `https://images.unsplash.com/photo-1509062522246-3755977927d7`
+Source: https://images.unsplash.com/photo-1509062522246-3755977927d7
 
-License: [Unsplash License](https://unsplash.com/license)
+License: https://unsplash.com/license
 
 ## Notes
 
-- `rails action_text:install` turns on the `image_processing` gem. This app leaves it commented out. The hero is displayed at its original size, and the briefing stays on the gems from `rails new`.
-- Brakeman reports that Ruby 3.2 and Rails 7.2 are past upstream support. The demo is pinned to Rails 7.2.4 on purpose. CI skips those two end of life checks and still runs the rest of the scan.
-- Rails 7.2 generates a Dockerfile for Kamal. Render should use `render.yaml` (`runtime: ruby`), not that Dockerfile. The Docker entrypoint also migrates and seeds, if you run the image yourself.
+`rails action_text:install` turns on the `image_processing` gem. I left it commented out. The hero is displayed at its original size.
+
+Brakeman reports that Ruby 3.2 and Rails 7.2 are past upstream support. The demo is pinned to Rails 7.2.4 on purpose. CI skips those two end of life checks and still runs the rest of the scan.
+
+Rails 7.2 generates a Dockerfile for Kamal. Render should use `render.yaml` (`runtime: ruby`), not that Dockerfile. The Docker entrypoint also migrates and seeds, if you run the image yourself.

@@ -14,7 +14,8 @@ class DonationsTest < ApplicationSystemTestCase
     visit root_path
 
     assert_selector "h1", text: @campaign.title
-    assert_selector "img.hero__image"
+    assert_selector "img.hero__image[alt='#{@campaign.image_alt}']"
+    assert_text @campaign.location
     assert_text "$0.00 raised"
     assert_selector "button[data-trix-attribute='underline']"
 
@@ -60,7 +61,7 @@ class DonationsTest < ApplicationSystemTestCase
     fill_in "Amount (USD)", with: "0.50"
     click_button "Record this gift"
 
-    assert_text "Amount must be at least $1"
+    assert_text "Amount must be between $1 and $100,000"
     assert_no_text "Thank you, Casey Nguyen"
   end
 
@@ -70,7 +71,6 @@ class DonationsTest < ApplicationSystemTestCase
         donor_name: format("Donor %02d", index + 1),
         donor_email: "donor#{index}@example.com",
         amount: "20",
-        skip_notifications: true,
         created_at: index.minutes.ago
       )
     end
@@ -78,8 +78,8 @@ class DonationsTest < ApplicationSystemTestCase
     visit campaign_path(@campaign)
 
     assert_text "Donor 01"
-    assert_selector "turbo-frame#donations_page_2"
-    page.execute_script("document.querySelector('#donations_page_2').scrollIntoView()")
+    assert_selector "turbo-frame[id^='donations_after_']"
+    page.execute_script("document.querySelector(\"turbo-frame[id^='donations_after_']\").scrollIntoView()")
 
     assert_text "Donor 11"
   end

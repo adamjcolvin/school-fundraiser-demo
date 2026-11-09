@@ -1,7 +1,10 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  # Puma, the Solid Queue supervisor (async mode shares this pool), and
+  # Solid Cable's poller all check out connections. The extra room covers
+  # the default worker threads, the dispatcher, and the scheduler.
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 }.to_i + 8 %>
 
 development:
   <<: *default

@@ -18,8 +18,6 @@ require "rails/test_unit/railtie"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-require_relative "../lib/mail_delivery/log"
-
 module SchoolFundraiser
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
@@ -32,8 +30,5 @@ module SchoolFundraiser
 
     # The school in the seed data is in Lincoln, Nebraska.
     config.time_zone = "America/Chicago"
-
-    # Registered before the environment files set delivery_method.
-    ActionMailer::Base.add_delivery_method :log, MailDelivery::Log
   end
 end

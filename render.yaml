@@ -32,5 +32,6 @@ services:
         fromDatabase:
           name: school-fundraiser-db
           property: connectionString
+      # One Puma process. Solid Queue runs inside it.
       - key: WEB_CONCURRENCY
         value: "0"

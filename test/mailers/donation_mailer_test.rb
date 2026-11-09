@@ -7,8 +7,7 @@ class DonationMailerTest < ActionMailer::TestCase
       donor_name: "Casey Nguyen",
       donor_email: "casey@example.com",
       amount: "100",
-      note: "<div>Hello <strong>there</strong></div>",
-      skip_notifications: true
+      note: "<div>Hello <strong>there</strong></div>"
     )
 
     email = DonationMailer.thank_you(donation)

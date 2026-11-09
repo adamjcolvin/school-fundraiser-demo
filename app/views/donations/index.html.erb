@@ -1,11 +1,4 @@
-<%= turbo_frame_tag "donations_page_#{@page.number}" do %>
+<%= turbo_frame_tag @page.frame_id do %>
   <%= render partial: "donations/donation", collection: @page.records %>
-
-  <% if @page.more? %>
-    <%= turbo_frame_tag "donations_page_#{@page.next_number}",
-          src: campaign_donations_path(@campaign, page: @page.next_number),
-          loading: :lazy do %>
-      <p class="donations__loading">Loading more gifts</p>
-    <% end %>
-  <% end %>
+  <%= render "donations/more", campaign: @campaign, page: @page %>
 <% end %>

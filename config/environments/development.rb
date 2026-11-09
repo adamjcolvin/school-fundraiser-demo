@@ -38,6 +38,11 @@ Rails.application.configure do
   config.action_mailer.raise_delivery_errors = false
   config.action_mailer.delivery_method = :log
 
+  # Same queue as production, on the primary database. The Puma plugin
+  # runs the supervisor so deliver_later is processed by bin/rails server.
+  config.active_job.queue_adapter = :solid_queue
+  config.active_job.enqueue_after_transaction_commit = :default
+
   # Disable caching for Action Mailer templates even if Action Controller
   # caching is enabled.
   config.action_mailer.perform_caching = false

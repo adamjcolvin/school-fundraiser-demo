@@ -12,8 +12,6 @@ const underline = {
   }
 }
 
-window.Trix.config.textAttributes.underline = underline
-
 document.addEventListener("trix-before-initialize", () => {
   window.Trix.config.textAttributes.underline = underline
 })

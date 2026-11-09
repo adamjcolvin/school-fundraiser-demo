@@ -1,6 +1,5 @@
 module MailDelivery
-  # Writes the message to the Rails log. Render's free tier blocks outbound
-  # SMTP, and this demo does not ship mail credentials.
+  # Writes the message to the Rails log when SMTP is not configured.
   class Log
     def initialize(settings = {})
       @settings = settings

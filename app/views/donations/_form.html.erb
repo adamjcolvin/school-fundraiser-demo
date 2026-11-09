@@ -1,7 +1,3 @@
-<% presets = [ 25, 50, 100, 250 ] %>
-<% amount_value = donation.amount.presence || (donation.errors.any? ? nil : "50") %>
-<% chosen = amount_value.to_s.to_d %>
-
 <section class="give-card" aria-labelledby="give-heading">
   <h2 id="give-heading">Give to the shelves</h2>
   <p class="give-card__note">
@@ -39,11 +35,11 @@
     <div class="field">
       <span class="field__label" id="amount-label">Amount (USD)</span>
       <div class="amounts" role="group" aria-labelledby="amount-label">
-        <% presets.each do |preset| %>
+        <% Donation::PRESETS.each do |preset| %>
           <button
             type="button"
-            class="<%= "is-selected" if amount_value.present? && chosen == preset %>"
-            aria-pressed="<%= amount_value.present? && chosen == preset %>"
+            class="<%= "is-selected" if donation.preset_selected?(preset) %>"
+            aria-pressed="<%= donation.preset_selected?(preset) %>"
             data-amount-picker-target="button"
             data-action="amount-picker#choose"
             data-amount="<%= preset %>"
@@ -52,7 +48,7 @@
       </div>
       <%= form.label :amount, "Amount (USD)", class: "visually-hidden" %>
       <%= form.text_field :amount,
-            value: amount_value,
+            value: donation.form_amount,
             required: true,
             inputmode: "decimal",
             autocomplete: "off",

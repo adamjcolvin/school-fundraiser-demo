@@ -28,8 +28,9 @@ class DonationTest < ActiveSupport::TestCase
     assert_not tiny.valid?
     assert_not huge.valid?
     assert_not precise.valid?
-    assert_includes tiny.errors[:amount], "must be at least $1"
-    assert_includes precise.errors[:amount], "must be a dollar amount, like 25 or 25.00"
+    assert_includes tiny.errors[:amount_cents], "must be between $1 and $100,000"
+    assert_includes huge.errors[:amount_cents], "must be between $1 and $100,000"
+    assert_includes precise.errors[:amount_cents], "must be a dollar amount, like 25 or 25.00"
   end
 
   test "requires a name and a real email" do
@@ -75,23 +76,68 @@ class DonationTest < ActiveSupport::TestCase
       ))
     end
 
-    first = @campaign.donation_page(1)
-    second = @campaign.donation_page(2)
+    first = @campaign.donation_page
+    second = @campaign.donation_page(first.next_before)
 
     assert_equal 10, first.records.length
     assert first.more?
     assert_equal "Donor 0", first.records.first.donor_name
     assert_equal 2, second.records.length
     assert_not second.more?
-    assert_equal "donations_page_2", "donations_page_#{first.next_number}"
+    assert_equal "donations_after_#{first.next_before}", first.next_frame_id
   end
 
-  test "broadcasts the gift and the total and queues a thank you" do
-    donation = nil
+  test "a newer gift does not shift the next page" do
+    12.times do |index|
+      @campaign.donations.create!(gift.merge(
+        donor_name: "Donor #{index}",
+        donor_email: "donor#{index}@example.com",
+        created_at: index.minutes.ago
+      ))
+    end
+
+    first = @campaign.donation_page
+    cursor = first.next_before
+    before_names = @campaign.donation_page(cursor).records.map(&:donor_name)
+
+    @campaign.donations.create!(gift.merge(
+      donor_name: "Newest Gift",
+      donor_email: "newest@example.com",
+      created_at: Time.current
+    ))
+
+    assert_equal "Newest Gift", @campaign.donation_page.records.first.donor_name
+    assert_equal before_names, @campaign.donation_page(cursor).records.map(&:donor_name)
+  end
+
+  test "suggests fifty dollars until the donor types an amount" do
+    fresh = @campaign.donations.build
+
+    assert_equal "50", fresh.form_amount
+    assert fresh.preset_selected?(50)
+    assert_not fresh.preset_selected?(25)
+
+    rejected = build(amount: "0.50")
+    rejected.validate
+
+    assert_equal "0.50", rejected.form_amount
+    assert_not rejected.preset_selected?(50)
+  end
+
+  test "note? is true when the rich text has words" do
+    blank = build(note: "<div><br></div>")
+    written = build(note: "<div>For <u>Room 12</u></div>")
+
+    assert_not blank.note?
+    assert written.note?
+  end
+
+  test "publish broadcasts the gift and the total and queues a thank you" do
+    donation = @campaign.donations.create!(gift.merge(donor_name: "Casey Nguyen"))
 
     assert_enqueued_emails 1 do
       payloads = capture_turbo_stream_broadcasts([ @campaign, :donations ]) do
-        donation = @campaign.donations.create!(gift.merge(skip_notifications: false, donor_name: "Casey Nguyen"))
+        donation.publish
       end
 
       assert_equal [ "prepend", "replace" ], payloads.map { |stream| stream["action"] }
@@ -103,7 +149,7 @@ class DonationTest < ActiveSupport::TestCase
     assert_enqueued_email_with DonationMailer, :thank_you, args: [ donation ]
   end
 
-  test "a quiet save skips the broadcast and the email" do
+  test "saving a gift does not broadcast or email until it is published" do
     assert_no_enqueued_emails do
       assert_no_turbo_stream_broadcasts([ @campaign, :donations ]) do
         @campaign.donations.create!(gift)
@@ -116,8 +162,7 @@ class DonationTest < ActiveSupport::TestCase
       {
         donor_name: "Ada Lovelace",
         donor_email: "ada@example.com",
-        amount: "20",
-        skip_notifications: true
+        amount: "20"
       }
     end
 
